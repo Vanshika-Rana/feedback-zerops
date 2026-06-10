@@ -12,17 +12,12 @@ export const connectDB = async () => {
 
   await client.connect();
 
-  const tableExists = await client.query(`SELECT EXISTS (
-    SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename  = 'entries'
-  );`);
-
-  if (!tableExists.rows[0]?.exists) {
-    await client.query(`CREATE TABLE entries (
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS clicks (
       id SERIAL PRIMARY KEY,
-      data TEXT NOT NULL
-    );`);
-  }
+      clicked_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
 
   return client;
 };
-
