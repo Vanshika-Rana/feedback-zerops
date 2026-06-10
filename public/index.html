@@ -5,79 +5,219 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Zerops Quickstart</title>
 		<style>
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
 			body {
 				font-family: sans-serif;
+				background: #f5f3ee;
 				display: flex;
 				flex-direction: column;
 				align-items: center;
 				justify-content: center;
 				min-height: 100vh;
-				margin: 0;
-				background: #0a0a0a;
-				color: #fff;
+				padding: 3rem 1.5rem;
+			}
+			.logo {
+				display: flex;
+				align-items: center;
+				gap: 7px;
+				margin-bottom: 2.5rem;
+				opacity: 0.45;
+			}
+			.logo-dot {
+				width: 18px;
+				height: 18px;
+				background: #16a34a;
+				border-radius: 4px;
+			}
+			.logo-text {
+				font-size: 13px;
+				color: #1a1a1a;
+				letter-spacing: 0.06em;
+				font-weight: 600;
 			}
 			h1 {
-				font-size: 1.5rem;
-				margin-bottom: 2rem;
-				opacity: 0.7;
+				font-size: 1.6rem;
+				font-weight: 500;
+				color: #111;
+				text-align: center;
+				margin-bottom: 0.6rem;
+				line-height: 1.3;
+			}
+			.subtitle {
+				font-size: 0.9rem;
+				color: #777;
+				text-align: center;
+				max-width: 360px;
+				line-height: 1.6;
+				margin-bottom: 2.5rem;
 			}
 			button {
-				font-size: 1.2rem;
-				padding: 1.2rem 2.4rem;
-				border: none;
-				border-radius: 12px;
-				background: #5c6ac4;
+				background: #16a34a;
 				color: #fff;
+				border: none;
+				border-radius: 8px;
+				padding: 0.85rem 1.8rem;
+				font-size: 0.95rem;
+				font-weight: 600;
 				cursor: pointer;
 				transition:
 					transform 0.1s,
-					background 0.2s;
+					background 0.15s;
+				font-family: sans-serif;
 			}
 			button:hover {
-				background: #4a58b2;
+				background: #15803d;
 			}
 			button:active {
 				transform: scale(0.97);
 			}
-			.subtitle {
-				font-size: 1rem;
+			button:disabled {
 				opacity: 0.5;
-				margin-bottom: 2rem;
-				text-align: center;
-				max-width: 420px;
+				cursor: default;
 			}
 			.count {
-				margin-top: 1.5rem;
-				font-size: 1rem;
-				opacity: 0.5;
+				margin-top: 1.1rem;
+				font-size: 0.82rem;
+				color: #aaa;
+				text-align: center;
+			}
+			.count-num {
+				color: #16a34a;
+				font-weight: 700;
+			}
+			.avatars {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 7px;
+				margin-top: 1.8rem;
+				max-width: 400px;
+			}
+			.avatar {
+				width: 34px;
+				height: 34px;
+				border-radius: 50%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 10px;
+				font-weight: 700;
+				color: #fff;
+				opacity: 0;
+				transform: scale(0.5);
+				transition:
+					opacity 0.3s,
+					transform 0.3s;
+			}
+			.avatar.visible {
+				opacity: 1;
+				transform: scale(1);
+			}
+			.divider {
+				width: 40px;
+				height: 1px;
+				background: #ddd;
+				margin: 2rem 0 1.2rem;
+			}
+			.stack-pills {
+				display: flex;
+				gap: 6px;
+				flex-wrap: wrap;
+				justify-content: center;
+			}
+			.pill {
+				font-size: 11px;
+				padding: 3px 10px;
+				border-radius: 20px;
+				border: 0.5px solid #d0cec8;
+				color: #999;
+				background: #fff;
 			}
 		</style>
 	</head>
 	<body>
+		<div class="logo">
+			<div class="logo-dot"></div>
+			<span class="logo-text">zerops</span>
+		</div>
 		<h1>You made it. 🎉</h1>
 		<p class="subtitle">
-			You just deployed a real app on Zerops — managed database, private
-			network, auto-deploy, the whole thing.
+			You just deployed a real app — managed database, private network,
+			auto-deploy. Let us know you made it through.
 		</p>
 		<button id="btn">👋 I followed the Zerops quickstart</button>
-		<p class="count" id="count">Loading...</p>
+		<p class="count">
+			<span class="count-num" id="count">...</span>
+			<span id="count-label"></span>
+		</p>
+		<div class="avatars" id="avatars"></div>
+		<div class="divider"></div>
+		<div class="stack-pills">
+			<span class="pill">Node.js 20</span>
+			<span class="pill">PostgreSQL 16</span>
+			<span class="pill">Zerops</span>
+		</div>
 
 		<script>
+			const colors = [
+				"#16a34a",
+				"#0891b2",
+				"#7c3aed",
+				"#db2777",
+				"#d97706",
+				"#059669",
+				"#2563eb",
+				"#9333ea",
+			];
+			const letters = "ABCDEFGHJKLMNPRSTUVWXYZ";
 			const btn = document.getElementById("btn");
 			const countEl = document.getElementById("count");
+			const countLabel = document.getElementById("count-label");
+			const avatarsEl = document.getElementById("avatars");
+
+			function initials(seed) {
+				return (
+					letters[(seed * 7) % letters.length] +
+					letters[(seed * 13 + 5) % letters.length]
+				);
+			}
+
+			function addAvatar(seed, animate) {
+				const av = document.createElement("div");
+				av.className = "avatar" + (animate ? "" : " visible");
+				av.style.background = colors[seed % colors.length];
+				av.textContent = initials(seed);
+				av.title = "builder_" + (1000 + seed);
+				avatarsEl.appendChild(av);
+				if (animate)
+					requestAnimationFrame(() =>
+						requestAnimationFrame(() =>
+							av.classList.add("visible"),
+						),
+					);
+			}
 
 			async function loadCount() {
 				const res = await fetch("/count");
 				const { count } = await res.json();
-				countEl.textContent = `${count} developer${count === 1 ? "" : "s"} deployed this`;
+				countEl.textContent = count;
+				countLabel.textContent = `developer${count === 1 ? "" : "s"} deployed this`;
+				for (let i = 0; i < Math.min(count, 20); i++)
+					addAvatar(i * 3 + 5, false);
 			}
 
 			btn.addEventListener("click", async () => {
 				btn.disabled = true;
 				const res = await fetch("/click", { method: "POST" });
 				const { count } = await res.json();
-				countEl.textContent = `${count} developer${count === 1 ? "" : "s"} deployed this`;
+				countEl.textContent = count;
+				countLabel.textContent = `developer${count === 1 ? "" : "s"} deployed this`;
 				btn.textContent = "🎉 You're in!";
+				addAvatar(count, true);
 			});
 
 			loadCount();
